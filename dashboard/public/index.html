@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connected Vehicle Platform</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0e1a; color: #fff; display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar { width: 380px; background: #0d1321; border-right: 1px solid #1e2d45; display: flex; flex-direction: column; z-index: 10; overflow: hidden; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #1e2d45; flex-shrink: 0; }
+        .sidebar-header h1 { font-size: 16px; font-weight: 700; color: #00d4ff; letter-spacing: 2px; text-transform: uppercase; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; flex-shrink: 0; }
+        .stat-card { background: #111827; border: 1px solid #1e2d45; border-radius: 8px; padding: 12px; }
+        .stat-card .label { font-size: 10px; color: #5a7a9a; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+        .stat-card.normal .value { color: #00ff88; }
+        .stat-card.warning .value { color: #ffe66d; }
+        .stat-card.danger .value { color: #ff6b6b; }
+        .stat-card.info .value { color: #00d4ff; }
+
+        .section-title { padding: 10px 15px 6px; font-size: 11px; color: #5a7a9a; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid #1e2d45; flex-shrink: 0; }
+        .vehicles-list { flex: 1; overflow-y: auto; padding: 0 15px 10px; }
+        .vehicle-card { background: #111827; border: 1px solid #1e2d45; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .vehicle-card:hover { border-color: #00d4ff; transform: translateX(3px); }
+        .vehicle-card.PELIGRO { border-left: 3px solid #ff6b6b; animation: pulse-red 1s infinite; }
+        .vehicle-card.PRECAUCIÓN { border-left: 3px solid #ffe66d; }
+        .vehicle-card.NORMAL { border-left: 3px solid #00ff88; }
+        @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,107,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,107,107,0); } }
+
+        .vehicle-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .vehicle-id { font-size: 13px; font-weight: 700; color: #fff; }
+        .vehicle-model { font-size: 11px; color: #5a7a9a; }
+        .status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+        .status-badge.NORMAL { background: rgba(0,255,136,0.15); color: #00ff88; }
+        .status-badge.PRECAUCIÓN { background: rgba(255,230,109,0.15); color: #ffe66d; }
+        .status-badge.PELIGRO { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+
+        .vehicle-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        .metric { text-align: center; }
+        .metric .m-value { font-size: 14px; font-weight: 700; color: #00d4ff; }
+        .metric .m-label { font-size: 9px; color: #5a7a9a; text-transform: uppercase; }
+
+        #map { flex: 1; }
+
+        .detail-panel { position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: #0d1321; border-left: 1px solid #1e2d45; z-index: 100; transform: translateX(100%); transition: transform 0.3s ease; overflow-y: auto; }
+        .detail-panel.open { transform: translateX(0); }
+        .detail-header { padding: 20px; border-bottom: 1px solid #1e2d45; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #0d1321; }
+        .detail-header h2 { font-size: 18px; font-weight: 700; color: #00d4ff; }
+        .close-btn { background: none; border: 1px solid #1e2d45; color: #fff; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        .close-btn:hover { background: #1e2d45; }
+
+        .detail-section { padding: 15px 20px; border-bottom: 1px solid #1e2d45; }
+        .detail-section h3 { font-size: 11px; color: #5a7a9a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+        .metrics-big { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .metric-big { background: #111827; border: 1px solid #1e2d45; border-radius: 8px; padding: 12px; text-align: center; }
+        .metric-big .val { font-size: 28px; font-weight: 700; color: #00d4ff; }
+        .metric-big .lbl { font-size: 10px; color: #5a7a9a; text-transform: uppercase; margin-top: 2px; }
+
+        .prediction-bar { margin-top: 8px; }
+        .prediction-bar .bar-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+        .bar-track { background: #1e2d45; border-radius: 4px; height: 8px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .bar-fill.low { background: #00ff88; }
+        .bar-fill.mid { background: #ffe66d; }
+        .bar-fill.high { background: #ff6b6b; }
+
+        .alerts-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .alert-tag { background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.3); color: #ff6b6b; font-size: 10px; padding: 4px 8px; border-radius: 20px; }
+
+        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #111827; font-size: 12px; }
+        .info-row .key { color: #5a7a9a; }
+        .info-row .val { color: #fff; font-weight: 600; }
+
+        .live-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00ff88; }
+        .live-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0a0e1a; }
+        ::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1>🚗 Connected Vehicles</h1>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+            <p>Platform — CDMX</p>
+            <div class="live-indicator"><div class="live-dot"></div> LIVE</div>
+        </div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card info"><div class="label">Vehículos</div><div class="value" id="total-vehicles">0</div></div>
+        <div class="stat-card normal"><div class="label">Normales</div><div class="value" id="normal-count">0</div></div>
+        <div class="stat-card warning"><div class="label">Precaución</div><div class="value" id="warning-count">0</div></div>
+        <div class="stat-card danger"><div class="label">Peligro</div><div class="value" id="danger-count">0</div></div>
+    </div>
+    <div class="section-title">Vehículos en tiempo real</div>
+    <div class="vehicles-list" id="vehicles-list"></div>
+</div>
+
+<div id="map"></div>
+
+<div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+        <h2 id="detail-title">VH001</h2>
+        <button class="close-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-section">
+        <h3>Estado actual</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span id="detail-status-badge" class="status-badge">NORMAL</span>
+            <span id="detail-model" style="font-size:12px; color:#5a7a9a;"></span>
+        </div>
+        <div class="metrics-big">
+            <div class="metric-big"><div class="val" id="d-speed">0</div><div class="lbl">km/h</div></div>
+            <div class="metric-big"><div class="val" id="d-rpm">0</div><div class="lbl">RPM</div></div>
+            <div class="metric-big"><div class="val" id="d-temp">0</div><div class="lbl">°C Motor</div></div>
+            <div class="metric-big"><div class="val" id="d-fuel">0</div><div class="lbl">% Fuel</div></div>
+            <div class="metric-big"><div class="val" id="d-fuel-km">0</div><div class="lbl">km restantes</div></div>
+        </div>
+    </div>
+    <div class="detail-section">
+        <h3>🔮 Predicción de incidente</h3>
+        <div class="prediction-bar">
+            <div class="bar-label">
+                <span>Probabilidad de incidente</span>
+                <span id="d-prob">0%</span>
+            </div>
+            <div class="bar-track">
+                <div class="bar-fill" id="d-prob-bar" style="width:0%"></div>
+            </div>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:#5a7a9a;" id="d-prediction-text"></div>
+    </div>
+    <div class="detail-section">
+        <h3>⚠️ Alertas activas</h3>
+        <div class="alerts-tags" id="d-alerts"></div>
+    </div>
+    <div class="detail-section">
+        <h3>🤖 Diagnóstico ML</h3>
+
+        <!-- Mantenimiento Predictivo -->
+        <div style="margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span style="color:#ffa500;">🔧 Mantenimiento predictivo</span>
+                <span id="d-maint-prob" style="color:#ffa500; font-weight:700;">0%</span>
+            </div>
+            <div style="background:#1e2d45; border-radius:4px; height:6px; overflow:hidden;">
+                <div id="d-maint-bar" class="progress-fill" style="height:100%; border-radius:4px; transition:width 0.5s; width:0%; background:#ffa500;"></div>
+            </div>
+            <div style="font-size:10px; color:#5a7a9a; margin-top:4px;">Random Forest • Prob. de requerir mantenimiento</div>
+        </div>
+
+        <!-- Detección de Anomalías -->
+        <div style="margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span style="color:#ff5050;">🚨 Detección de anomalías</span>
+                <span id="d-anomaly-prob" style="color:#ff5050; font-weight:700;">0%</span>
+            </div>
+            <div style="background:#1e2d45; border-radius:4px; height:6px; overflow:hidden;">
+                <div id="d-anomaly-bar" class="progress-fill" style="height:100%; border-radius:4px; transition:width 0.5s; width:0%; background:#ff5050;"></div>
+            </div>
+            <div id="d-anomaly-status" style="font-size:10px; margin-top:4px; color:#5a7a9a;">Isolation Forest</div>
+        </div>
+
+        <!-- Predicción Falla Motor -->
+        <div>
+            <div style="font-size:11px; color:#ffc800; margin-bottom:4px;">🌡️ Predicción falla de motor</div>
+            <div id="d-engine-km" style="font-size:24px; font-weight:700; color:#ffc800;">--- km</div>
+            <div style="font-size:10px; color:#5a7a9a; margin-top:2px;">Regresión Lineal • km estimados antes de sobrecalentamiento</div>
+        </div>
+    </div>
+    <div class="detail-section">
+        <h3>📊 Información del viaje</h3>
+        <div id="d-info-rows"></div>
+    </div>
+    <div class="detail-section">
+        <h3>📈 Velocidad (últimas lecturas)</h3>
+        <canvas id="speedChart" height="120"></canvas>
+    </div>
+</div>
+
+<script type="module">
+    const config = await fetch('/api/config').then(r => r.json());
+    const MAPBOX_TOKEN = config.mapboxToken;
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [-99.1676, 19.4270],
+        zoom: 11
+    });
+
+    // Rutas reales entre puntos de CDMX
+    const ROUTE_WAYPOINTS = {
+        'VH001': [[-99.1676, 19.4270], [-99.1530, 19.4265]],
+        'VH002': [[-99.1676, 19.4180], [-99.1650, 19.4280]],
+        'VH003': [[-99.1900, 19.3800], [-99.1650, 19.4050]],
+        'VH004': [[-99.1500, 19.4000], [-99.1750, 19.4050]],
+        'VH005': [[-99.2000, 19.4050], [-99.1750, 19.4100]],
+        'VH006': [[-99.1600, 19.3500], [-99.1500, 19.3750]],
+        'VH007': [[-99.1050, 19.2570], [-99.1200, 19.2720]],
+        'VH008': [[-99.1950, 19.4320], [-99.1800, 19.4370]],
+        'VH009': [[-99.1620, 19.3500], [-99.1520, 19.3400]],
+        'VH010': [[-99.2600, 19.3600], [-99.2400, 19.3700]],
+    };
+
+    const vehicleRoutes = {};   // coordenadas de ruta por vehículo
+    const vehicleProgress = {}; // progreso en la ruta (0-1)
+    const markers = {};
+    const speedHistory = {};
+    const vehicleData = {};
+    let selectedVehicle = null;
+    let speedChart = null;
+    let animationFrames = {};
+
+    // Obtener ruta real de Mapbox Directions
+    async function fetchRoute(vehicleId) {
+        const waypoints = ROUTE_WAYPOINTS[vehicleId];
+        if (!waypoints) return null;
+        const coords = waypoints.map(w => w.join(',')).join(';');
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.routes && data.routes[0]) {
+                return data.routes[0].geometry.coordinates;
+            }
+        } catch (e) {
+            console.error('Error fetching route:', e);
+        }
+        return null;
+    }
+
+    // Dibujar línea de ruta en el mapa
+    function drawRoute(vehicleId, coords, color) {
+        //
+    }
+
+    function getStatusColor(status) {
+        if (status === 'PELIGRO') return '#ff6b6b';
+        if (status === 'PRECAUCIÓN') return '#ffe66d';
+        return '#00ff88';
+    }
+
+    function createMarkerEl(vehicleId, status) {
+        const el = document.createElement('div');
+        el.style.cssText = `
+            width: 32px; height: 32px;
+            background: ${getStatusColor(status)};
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; cursor: pointer;
+            box-shadow: 0 0 10px ${getStatusColor(status)};
+            transition: background 0.3s, box-shadow 0.3s;
+        `;
+        el.innerHTML = '🚗';
+        el.addEventListener('click', () => openDetail(vehicleId));
+        return el;
+    }
+
+    // Interpolar posición a lo largo de la ruta
+    function getPositionAlongRoute(coords, progress) {
+        const totalPoints = coords.length;
+        const idx = Math.floor(progress * (totalPoints - 1));
+        const nextIdx = Math.min(idx + 1, totalPoints - 1);
+        const t = (progress * (totalPoints - 1)) - idx;
+        const lng = coords[idx][0] + (coords[nextIdx][0] - coords[idx][0]) * t;
+        const lat = coords[idx][1] + (coords[nextIdx][1] - coords[idx][1]) * t;
+        return [lng, lat];
+    }
+
+    // Puntos aleatorios en CDMX
+    const CDMX_POINTS = [
+        [-99.1676, 19.4270], [-99.1530, 19.4265], [-99.1900, 19.3800],
+        [-99.1500, 19.4000], [-99.2000, 19.4050], [-99.1600, 19.3500],
+        [-99.1050, 19.2570], [-99.1950, 19.4320], [-99.1620, 19.3500],
+        [-99.2600, 19.3600], [-99.1750, 19.4100], [-99.1450, 19.4150],
+        [-99.1320, 19.3900], [-99.1800, 19.3700], [-99.2100, 19.4100],
+        [-99.1250, 19.4400], [-99.1700, 19.4500], [-99.1400, 19.3600],
+        [-99.2200, 19.3900], [-99.1550, 19.4350],
+    ];
+
+    async function getNewRandomRoute(vehicleId) {
+        const pointA = CDMX_POINTS[Math.floor(Math.random() * CDMX_POINTS.length)];
+        let pointB = CDMX_POINTS[Math.floor(Math.random() * CDMX_POINTS.length)];
+        while (pointB === pointA) pointB = CDMX_POINTS[Math.floor(Math.random() * CDMX_POINTS.length)];
+
+        const coords = `${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}`;
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.routes && data.routes[0]) {
+                return data.routes[0].geometry.coordinates;
+            }
+        } catch (e) {
+            console.error('Error fetching new route:', e);
+        }
+        return null;
+    }
+
+    async function initVehicle(vehicle) {
+        const coords = await getNewRandomRoute(vehicle.vehiclesID);
+        if (!coords) return;
+
+        vehicleRoutes[vehicle.vehiclesID] = coords;
+        vehicleProgress[vehicle.vehiclesID] = Math.random();
+
+        drawRoute(vehicle.vehiclesID, coords, getStatusColor(vehicle.status));
+
+        const el = createMarkerEl(vehicle.vehiclesID, vehicle.status);
+        const startPos = getPositionAlongRoute(coords, vehicleProgress[vehicle.vehiclesID]);
+        markers[vehicle.vehiclesID] = new mapboxgl.Marker({ element: el })
+            .setLngLat(startPos)
+            .addTo(map);
+
+        animateVehicle(vehicle.vehiclesID);
+    }
+
+    const fetchingNewRoute = {};
+
+    function animateVehicle(vehicleId) {
+        const route = vehicleRoutes[vehicleId];
+        if (!route || !markers[vehicleId]) return;
+
+        if (vehicleProgress[vehicleId] === undefined) vehicleProgress[vehicleId] = 0;
+
+        vehicleProgress[vehicleId] += 0.0008;
+
+        // Al llegar al final, calcular nueva ruta en paralelo sin bloquear animación
+        if (vehicleProgress[vehicleId] >= 1) {
+            vehicleProgress[vehicleId] = 0;
+            if (!fetchingNewRoute[vehicleId]) {
+                fetchingNewRoute[vehicleId] = true;
+                getNewRandomRoute(vehicleId).then(newRoute => {
+                    if (newRoute) vehicleRoutes[vehicleId] = newRoute;
+                    fetchingNewRoute[vehicleId] = false;
+                });
+            }
+        }
+
+        const pos = getPositionAlongRoute(vehicleRoutes[vehicleId], vehicleProgress[vehicleId]);
+        markers[vehicleId].setLngLat(pos);
+
+        animationFrames[vehicleId] = requestAnimationFrame(() => animateVehicle(vehicleId));
+    }
+
+    function updateMarkerStatus(vehicle) {
+        if (!markers[vehicle.vehiclesID]) return;
+        const el = markers[vehicle.vehiclesID].getElement();
+        el.style.background = getStatusColor(vehicle.status);
+        el.style.boxShadow = `0 0 10px ${getStatusColor(vehicle.status)}`;
+
+        // Actualizar color de ruta
+        const layerId = `route-layer-${vehicle.vehiclesID}`;
+        if (map.getLayer(layerId)) {
+            map.setPaintProperty(layerId, 'line-color', getStatusColor(vehicle.status));
+        }
+
+        vehicleData[vehicle.vehiclesID] = vehicle;
+
+        if (!speedHistory[vehicle.vehiclesID]) speedHistory[vehicle.vehiclesID] = [];
+        speedHistory[vehicle.vehiclesID].push(vehicle.speed);
+        if (speedHistory[vehicle.vehiclesID].length > 15) speedHistory[vehicle.vehiclesID].shift();
+
+        if (selectedVehicle === vehicle.vehiclesID) updateDetailPanel(vehicle);
+    }
+
+    function openDetail(vehicleId) {
+        selectedVehicle = vehicleId;
+        const vehicle = vehicleData[vehicleId];
+        if (!vehicle) return;
+        document.getElementById('detail-panel').classList.add('open');
+        updateDetailPanel(vehicle);
+        const route = vehicleRoutes[vehicleId];
+        if (route) {
+            const pos = getPositionAlongRoute(route, vehicleProgress[vehicleId] || 0);
+            map.flyTo({ center: pos, zoom: 14, speed: 1.2 });
+        }
+    }
+
+    function closeDetail() {
+        document.getElementById('detail-panel').classList.remove('open');
+        selectedVehicle = null;
+        if (speedChart) { speedChart.destroy(); speedChart = null; }
+    }
+
+    function updateDetailPanel(vehicle) {
+        document.getElementById('detail-title').textContent = vehicle.vehiclesID;
+        document.getElementById('detail-model').textContent = vehicle.model;
+        const badge = document.getElementById('detail-status-badge');
+        badge.textContent = vehicle.status;
+        badge.className = `status-badge ${vehicle.status}`;
+        document.getElementById('d-speed').textContent = vehicle.speed;
+        document.getElementById('d-rpm').textContent = vehicle.rpm;
+        document.getElementById('d-temp').textContent = vehicle.temperature;
+        document.getElementById('d-fuel').textContent = vehicle.fuel + '%';
+        document.getElementById('d-fuel-km').textContent = vehicle.fuel_km_remaining || '---';
+
+        // ML Models
+        const maintProb = vehicle.maintenance_prob || 0;
+        document.getElementById('d-maint-prob').textContent = maintProb + '%';
+        document.getElementById('d-maint-bar').style.width = maintProb + '%';
+        document.getElementById('d-maint-bar').className = 'progress-fill ' + (maintProb >= 70 ? 'high' : maintProb >= 40 ? 'mid' : 'low');
+
+        const anomalyProb = vehicle.anomaly_prob || 0;
+        document.getElementById('d-anomaly-prob').textContent = anomalyProb + '%';
+        document.getElementById('d-anomaly-bar').style.width = anomalyProb + '%';
+        document.getElementById('d-anomaly-bar').className = 'progress-fill ' + (anomalyProb >= 70 ? 'high' : anomalyProb >= 40 ? 'mid' : 'low');
+        document.getElementById('d-anomaly-status').textContent = vehicle.is_anomaly ? '🚨 Comportamiento inusual detectado' : '✅ Sin anomalías detectadas';
+        document.getElementById('d-anomaly-status').style.color = vehicle.is_anomaly ? '#ff5050' : '#00ff88';
+
+        const kmFailure = vehicle.km_to_failure || 0;
+        document.getElementById('d-engine-km').textContent = kmFailure > 0 ? '~' + kmFailure + ' km' : '⚠️ Riesgo inmediato';
+        document.getElementById('d-engine-km').style.color = kmFailure < 100 ? '#ff6b6b' : kmFailure < 200 ? '#ffe66d' : '#ffc800';
+
+        const prob = vehicle.incident_probability || 0;
+        document.getElementById('d-prob').textContent = prob + '%';
+        const bar = document.getElementById('d-prob-bar');
+        bar.style.width = prob + '%';
+        bar.className = 'bar-fill ' + (prob >= 60 ? 'high' : prob >= 30 ? 'mid' : 'low');
+        document.getElementById('d-prediction-text').textContent = prob >= 60
+            ? '⚠️ Alto riesgo de incidente en los próximos minutos'
+            : prob >= 30 ? '⚡ Riesgo moderado, monitorear de cerca'
+            : '✅ Conducción dentro de parámetros normales';
+
+        const alertsEl = document.getElementById('d-alerts');
+        alertsEl.innerHTML = vehicle.alerts && vehicle.alerts.length > 0
+            ? vehicle.alerts.map(a => `<span class="alert-tag">${a}</span>`).join('')
+            : '<span style="font-size:11px; color:#5a7a9a;">Sin alertas activas</span>';
+
+        document.getElementById('d-info-rows').innerHTML = `
+            <div class="info-row"><span class="key">Ruta</span><span class="val">${vehicle.route}</span></div>
+            <div class="info-row"><span class="key">Frenada</span><span class="val">${vehicle.brake_force} N</span></div>
+            <div class="info-row"><span class="key">Aceleración</span><span class="val">${vehicle.acceleration} m/s²</span></div>
+            <div class="info-row"><span class="key">Distancia recorrida</span><span class="val">${vehicle.distance} km</span></div>
+            <div class="info-row"><span class="key">Incidentes totales</span><span class="val">${vehicle.total_incidents}</span></div>
+            <div class="info-row"><span class="key">Risk Score</span><span class="val">${vehicle.risk_score}/100</span></div>
+        `;
+
+        const history = speedHistory[vehicle.vehiclesID] || [];
+        if (speedChart) speedChart.destroy();
+        const ctx = document.getElementById('speedChart').getContext('2d');
+        speedChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: history.map((_, i) => i + 1),
+                datasets: [{
+                    data: history,
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0,212,255,0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { ticks: { color: '#5a7a9a', font: { size: 10 } }, grid: { color: '#1e2d45' } }
+                }
+            }
+        });
+    }
+
+    function updateSidebar(vehicles) {
+        const normal = vehicles.filter(v => v.status === 'NORMAL').length;
+        const warning = vehicles.filter(v => v.status === 'PRECAUCIÓN').length;
+        const danger = vehicles.filter(v => v.status === 'PELIGRO').length;
+        document.getElementById('total-vehicles').textContent = vehicles.length;
+        document.getElementById('normal-count').textContent = normal;
+        document.getElementById('warning-count').textContent = warning;
+        document.getElementById('danger-count').textContent = danger;
+
+        const list = document.getElementById('vehicles-list');
+        list.innerHTML = vehicles.map(v => `
+            <div class="vehicle-card ${v.status}" onclick="openDetail('${v.vehiclesID}')">
+                <div class="vehicle-header">
+                    <div>
+                        <div class="vehicle-id">${v.vehiclesID}</div>
+                        <div class="vehicle-model">${v.model} • ${v.route}</div>
+                    </div>
+                    <span class="status-badge ${v.status}">${v.status}</span>
+                </div>
+                <div class="vehicle-metrics">
+                    <div class="metric"><div class="m-value">${v.speed}</div><div class="m-label">km/h</div></div>
+                    <div class="metric"><div class="m-value">${v.rpm}</div><div class="m-label">RPM</div></div>
+                    <div class="metric"><div class="m-value">${v.fuel}%</div><div class="m-label">Fuel</div></div>
+                </div>
+                ${v.alerts && v.alerts.length > 0 ? `<div style="margin-top:8px; font-size:10px; color:#ff6b6b;">⚠️ ${v.alerts.join(' • ')}</div>` : ''}
+                <div style="display:flex; gap:5px; flex-wrap:wrap; margin-top:6px;">
+                    ${v.maintenance_prob >= 50 ? `<span style="font-size:9px; padding:2px 6px; border-radius:4px; background:rgba(255,165,0,0.15); color:#ffa500; border:1px solid rgba(255,165,0,0.3);">🔧 Mant. ${v.maintenance_prob}%</span>` : ''}
+                    ${v.is_anomaly ? `<span style="font-size:9px; padding:2px 6px; border-radius:4px; background:rgba(255,50,50,0.15); color:#ff5050; border:1px solid rgba(255,50,50,0.3);">🚨 Anomalía</span>` : ''}
+                    ${v.km_to_failure < 200 ? `<span style="font-size:9px; padding:2px 6px; border-radius:4px; background:rgba(255,200,0,0.15); color:#ffc800; border:1px solid rgba(255,200,0,0.3);">🌡️ ${v.km_to_failure}km</span>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    let initialized = false;
+
+    async function fetchData() {
+        try {
+            const res = await fetch('http://localhost:3000/api/vehicles');
+            const vehicles = await res.json();
+
+            if (!initialized && vehicles.length > 0) {
+                initialized = true;
+                for (const v of vehicles) {
+                    vehicleData[v.vehiclesID] = v;
+                    await initVehicle(v);
+                }
+            } else {
+                vehicles.forEach(v => updateMarkerStatus(v));
+            }
+            updateSidebar(vehicles);
+        } catch (e) {
+            console.error('Error:', e);
+        }
+    }
+
+    map.on('load', async () => {
+        fetchData();
+        setInterval(fetchData, 2000);
+    });
+</script>
+</body>
+</html>

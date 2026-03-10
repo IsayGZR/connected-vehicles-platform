@@ -1,0 +1,8 @@
+simulator/venv/
+simulator/models/
+dashboard/node_modules/
+__pycache__/
+*.pyc
+.env
+dashboard/.env
+simulator/.env
