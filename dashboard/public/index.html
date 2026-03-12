@@ -85,6 +85,94 @@
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #0a0e1a; }
         ::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 2px; }
+
+        /* ===== TRAFFIC VISION ===== */
+        .vision-btn {
+            margin-top: 10px; width: 100%;
+            background: linear-gradient(135deg, #7b2fff, #00d4ff);
+            border: none; color: #fff; font-size: 12px; font-weight: 700;
+            letter-spacing: 1px; padding: 10px; border-radius: 8px; cursor: pointer;
+            text-transform: uppercase; display: flex; align-items: center;
+            justify-content: center; gap: 8px; transition: opacity 0.2s;
+        }
+        .vision-btn:hover { opacity: 0.85; }
+        .vision-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 200;
+            align-items: center; justify-content: center;
+        }
+        .vision-overlay.open { display: flex; }
+        .vision-modal {
+            background: #0d1321; border: 1px solid #1e2d45;
+            border-radius: 12px; width: 640px; max-width: 95vw;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .vision-modal-header {
+            padding: 20px 24px; border-bottom: 1px solid #1e2d45;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; background: #0d1321;
+        }
+        .vision-modal-header h2 { font-size: 16px; color: #00d4ff; font-weight: 700; letter-spacing: 1px; }
+        .vision-modal-body { padding: 24px; }
+        .vision-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .vision-tab {
+            flex: 1; padding: 10px; background: #111827;
+            border: 1px solid #1e2d45; border-radius: 8px;
+            color: #5a7a9a; font-size: 12px; font-weight: 700;
+            cursor: pointer; text-align: center; transition: all 0.2s;
+        }
+        .vision-tab.active { border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.08); }
+        .vision-input-area { margin-bottom: 16px; }
+        .vision-input-area input[type="text"] {
+            width: 100%; background: #111827; border: 1px solid #1e2d45;
+            border-radius: 8px; color: #fff; padding: 10px 14px;
+            font-size: 13px; outline: none;
+        }
+        .vision-input-area input[type="text"]:focus { border-color: #00d4ff; }
+        .vision-dropzone {
+            border: 2px dashed #1e2d45; border-radius: 8px; padding: 32px;
+            text-align: center; color: #5a7a9a; font-size: 13px;
+            cursor: pointer; transition: border-color 0.2s;
+        }
+        .vision-dropzone:hover, .vision-dropzone.drag-over { border-color: #00d4ff; color: #00d4ff; }
+        .vision-dropzone .dz-icon { font-size: 32px; margin-bottom: 10px; }
+        .vision-preview { display: none; margin-bottom: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #1e2d45; }
+        .vision-preview img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+        .vision-analyze-btn {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #7b2fff, #00d4ff);
+            border: none; border-radius: 8px; color: #fff;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            letter-spacing: 1px; transition: opacity 0.2s;
+        }
+        .vision-analyze-btn:hover { opacity: 0.85; }
+        .vision-analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .vision-results { margin-top: 20px; }
+        .vision-results-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #1e2d45; }
+        .congestion-badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .congestion-badge.BAJO { background: rgba(0,255,136,0.15); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+        .congestion-badge.MEDIO { background: rgba(255,230,109,0.15); color: #ffe66d; border: 1px solid rgba(255,230,109,0.3); }
+        .congestion-badge.ALTO { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+        .congestion-badge.CRÍTICO { background: rgba(200,0,0,0.2); color: #ff3333; border: 1px solid rgba(200,0,0,0.4); }
+        .vision-metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .vision-metric-card { background: #111827; border: 1px solid #1e2d45; border-radius: 8px; padding: 14px; text-align: center; }
+        .vision-metric-card .vm-val { font-size: 28px; font-weight: 700; color: #00d4ff; }
+        .vision-metric-card .vm-lbl { font-size: 10px; color: #5a7a9a; text-transform: uppercase; margin-top: 4px; }
+        .vision-caption { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #cde; margin-bottom: 16px; line-height: 1.6; }
+        .vision-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+        .vision-tag { background: #111827; border: 1px solid #1e2d45; color: #8ab; font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+        .vision-tag.vehicle { border-color: rgba(0,212,255,0.4); color: #00d4ff; }
+        .vision-tag.incident { border-color: rgba(255,107,107,0.4); color: #ff6b6b; }
+        .vision-tag.road { border-color: rgba(255,230,109,0.4); color: #ffe66d; }
+        .vision-incidents { background: rgba(255,107,107,0.06); border: 1px solid rgba(255,107,107,0.2); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+        .vision-incidents h4 { font-size: 11px; color: #ff6b6b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .vision-loader { display: none; text-align: center; padding: 30px; color: #5a7a9a; font-size: 13px; }
+        .vision-loader.active { display: block; }
+        .vision-spinner { width: 36px; height: 36px; border: 3px solid #1e2d45; border-top-color: #00d4ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .vision-sample-imgs { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .vision-sample-imgs span { font-size: 11px; color: #00d4ff; cursor: pointer; text-decoration: underline; opacity: 0.8; }
+        .vision-sample-imgs span:hover { opacity: 1; }
     </style>
 </head>
 <body>
@@ -103,8 +191,83 @@
         <div class="stat-card warning"><div class="label">Precaución</div><div class="value" id="warning-count">0</div></div>
         <div class="stat-card danger"><div class="label">Peligro</div><div class="value" id="danger-count">0</div></div>
     </div>
+    <div style="padding: 0 15px;">
+        <button class="vision-btn" onclick="openVisionModal()">
+            📹 Traffic Vision — Análisis CV
+        </button>
+    </div>
     <div class="section-title">Vehículos en tiempo real</div>
     <div class="vehicles-list" id="vehicles-list"></div>
+</div>
+
+<!-- ===== MODAL TRAFFIC VISION ===== -->
+<div class="vision-overlay" id="vision-overlay" onclick="closeVisionModal(event)">
+    <div class="vision-modal" onclick="event.stopPropagation()">
+        <div class="vision-modal-header">
+            <h2>📹 TRAFFIC VISION — COMPUTER VISION</h2>
+            <button class="close-btn" onclick="closeVisionModal()">&#10005;</button>
+        </div>
+        <div class="vision-modal-body">
+            <p style="font-size:12px; color:#5a7a9a; margin-bottom:16px;">
+                Analiza imágenes de tráfico con Azure AI Vision. Detecta vehículos, nivel de congestión, incidentes y condiciones de la vía.
+            </p>
+            <div class="vision-tabs">
+                <div class="vision-tab active" id="tab-url" onclick="switchTab(&apos;url&apos;)">🔗 URL de imagen</div>
+                <div class="vision-tab" id="tab-file" onclick="switchTab(&apos;file&apos;)">📁 Subir archivo</div>
+            </div>
+            <div id="panel-url" class="vision-input-area">
+                <input type="text" id="image-url-input" placeholder="https://ejemplo.com/imagen-trafico.jpg" />
+                <div class="vision-sample-imgs">
+                    <span style="color:#5a7a9a; text-decoration:none; cursor:default;">Ejemplos:</span>
+                    <span onclick="useSample(&apos;https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Driving_in_traffic_in_Mexico_City.jpg/1280px-Driving_in_traffic_in_Mexico_City.jpg&apos;)">Tráfico CDMX</span>
+                    <span onclick="useSample(&apos;https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Priorat_traffic_jam.jpg/1280px-Priorat_traffic_jam.jpg&apos;)">Congestión</span>
+                </div>
+            </div>
+            <div id="panel-file" style="display:none;">
+                <div class="vision-dropzone" id="dropzone" onclick="document.getElementById(&apos;file-input&apos;).click()"
+                    ondragover="event.preventDefault(); this.classList.add(&apos;drag-over&apos;)"
+                    ondragleave="this.classList.remove(&apos;drag-over&apos;)"
+                    ondrop="handleFileDrop(event)">
+                    <div class="dz-icon">📷</div>
+                    <div>Arrastra una imagen aquí o haz clic para seleccionar</div>
+                    <div style="font-size:11px; margin-top:6px; opacity:0.6;">JPG, PNG, WebP — máx 10MB</div>
+                </div>
+                <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFileSelect(event)" />
+            </div>
+            <div class="vision-preview" id="vision-preview">
+                <img id="preview-img" src="" alt="preview" />
+                <div style="padding:8px 12px; background:#111827; display:flex; justify-content:flex-end;">
+                    <button onclick="clearVision()" style="background:none; border:1px solid #1e2d45; color:#5a7a9a; font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer;">✕ Limpiar</button>
+                </div>
+            </div>
+            <button class="vision-analyze-btn" id="analyze-btn" onclick="analyzeImage()">🔍 ANALIZAR CON AZURE AI VISION</button>
+            <div class="vision-loader" id="vision-loader">
+                <div class="vision-spinner"></div>
+                Analizando imagen con Azure AI Vision...
+            </div>
+            <div class="vision-results" id="vision-results" style="display:none;">
+                <div class="vision-results-header">
+                    <span style="font-size:13px; font-weight:700; color:#fff;">Resultado del análisis</span>
+                    <span id="congestion-badge" class="congestion-badge">—</span>
+                </div>
+                <div class="vision-caption" id="vision-caption-text"></div>
+                <div class="vision-metric-grid">
+                    <div class="vision-metric-card"><div class="vm-val" id="v-vehicles">—</div><div class="vm-lbl">Vehículos detectados</div></div>
+                    <div class="vision-metric-card"><div class="vm-val" id="v-congestion-val">—</div><div class="vm-lbl">Nivel de congestión</div></div>
+                    <div class="vision-metric-card"><div class="vm-val" id="v-conditions">—</div><div class="vm-lbl">Condición de vía</div></div>
+                    <div class="vision-metric-card"><div class="vm-val" id="v-incidents">—</div><div class="vm-lbl">Incidentes</div></div>
+                </div>
+                <div class="vision-incidents" id="vision-incidents-box" style="display:none;">
+                    <h4>⚠️ Incidentes / Alertas detectadas</h4>
+                    <div id="vision-incidents-list"></div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:#5a7a9a; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Elementos identificados</div>
+                    <div class="vision-tags" id="vision-tags-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="map"></div>
@@ -538,6 +701,196 @@
         fetchData();
         setInterval(fetchData, 2000);
     });
+
+    // ===== TRAFFIC VISION — MÓDULO 2 =====
+    window.openVisionModal = function() {
+        document.getElementById('vision-overlay').classList.add('open');
+    };
+    window.closeVisionModal = function(e) {
+        if (!e || e.target === document.getElementById('vision-overlay')) {
+            document.getElementById('vision-overlay').classList.remove('open');
+        }
+    };
+    function resetVisionResults() {
+        document.getElementById('vision-results').style.display = 'none';
+        document.getElementById('vision-loader').classList.remove('active');
+    }
+
+    window.clearVision = function() {
+        document.getElementById('preview-img').src = '';
+        document.getElementById('vision-preview').style.display = 'none';
+        document.getElementById('image-url-input').value = '';
+        document.getElementById('file-input').value = '';
+        selectedFile = null;
+        resetVisionResults();
+    };
+
+    window.switchTab = function(tab) {
+        document.getElementById('panel-url').style.display = tab === 'url' ? 'block' : 'none';
+        document.getElementById('panel-file').style.display = tab === 'file' ? 'block' : 'none';
+        document.getElementById('tab-url').className = 'vision-tab' + (tab === 'url' ? ' active' : '');
+        document.getElementById('tab-file').className = 'vision-tab' + (tab === 'file' ? ' active' : '');
+        resetVisionResults();
+    };
+    window.useSample = function(url) {
+        document.getElementById('image-url-input').value = url;
+        const preview = document.getElementById('vision-preview');
+        const img = document.getElementById('preview-img');
+        img.src = url;
+        preview.style.display = 'block';
+        resetVisionResults();
+    };
+
+    let selectedFile = null;
+
+    window.handleFileSelect = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('vision-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        resetVisionResults();
+    };
+
+    window.handleFileDrop = function(event) {
+        event.preventDefault();
+        document.getElementById('dropzone').classList.remove('drag-over');
+        const file = event.dataTransfer.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('vision-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        resetVisionResults();
+    };
+
+    window.analyzeImage = async function() {
+        const btn = document.getElementById('analyze-btn');
+        const loader = document.getElementById('vision-loader');
+        const results = document.getElementById('vision-results');
+
+        const isUrlTab = document.getElementById('panel-url').style.display !== 'none';
+        const imageUrl = document.getElementById('image-url-input').value.trim();
+
+        if (isUrlTab && !imageUrl) { alert('Ingresa una URL de imagen'); return; }
+        if (!isUrlTab && !selectedFile) { alert('Selecciona un archivo de imagen'); return; }
+
+        btn.disabled = true;
+        loader.classList.add('active');
+        results.style.display = 'none';
+
+        try {
+            let data;
+            if (isUrlTab) {
+                const res = await fetch('http://localhost:3000/api/vision/analyze-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl })
+                });
+                data = await res.json();
+            } else {
+                const res = await fetch('http://localhost:3000/api/vision/analyze-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': selectedFile.type },
+                    body: selectedFile
+                });
+                data = await res.json();
+            }
+
+            if (data.error) throw new Error(data.error);
+            renderVisionResults(data);
+        } catch (e) {
+            alert('Error al analizar: ' + e.message);
+            console.error(e);
+        } finally {
+            btn.disabled = false;
+            loader.classList.remove('active');
+        }
+    };
+
+    function renderVisionResults(data) {
+        // Tags de Azure Vision
+        const tags = data.tagsResult?.values || [];
+        const objects = data.objectsResult?.values || [];
+        const caption = data.captionResult?.text || data.denseCaptionsResult?.values?.[0]?.text || 'Sin descripción disponible';
+
+        // Contar vehículos en objects y tags
+        const vehicleTags = ['car', 'vehicle', 'truck', 'bus', 'motorcycle', 'bicycle', 'van', 'taxi',
+                             'auto', 'carro', 'camión', 'vehículo', 'moto', 'camioneta', 'autobús'];
+        const incidentTags = ['accident', 'crash', 'collision', 'fire', 'emergency', 'police',
+                              'ambulance', 'accidente', 'choque', 'fuego', 'emergencia'];
+        const roadTags = ['road', 'street', 'highway', 'wet', 'construction', 'puddle', 'rain',
+                          'calle', 'carretera', 'mojado', 'obra', 'lluvia'];
+
+        const vehicleObjects = objects.filter(o =>
+            vehicleTags.some(t => o.tags?.[0]?.name?.toLowerCase().includes(t))
+        );
+        const vehicleTagCount = tags.filter(t =>
+            vehicleTags.some(v => t.name?.toLowerCase().includes(v))
+        ).length;
+
+        const detectedVehicles = Math.max(vehicleObjects.length, vehicleTagCount > 0 ? vehicleTagCount : 0);
+        const detectedIncidents = tags.filter(t => incidentTags.some(i => t.name?.toLowerCase().includes(i)));
+        const roadConditions = tags.filter(t => roadTags.some(r => t.name?.toLowerCase().includes(r)));
+
+        // Calcular congestión basado en vehículos + tags
+        let congestionLevel, congestionText;
+        if (detectedVehicles >= 10 || tags.some(t => ['traffic', 'congestion', 'jam', 'tráfico', 'congestión'].includes(t.name?.toLowerCase()))) {
+            congestionLevel = 'CRÍTICO'; congestionText = 'Crítico';
+        } else if (detectedVehicles >= 5) {
+            congestionLevel = 'ALTO'; congestionText = 'Alto';
+        } else if (detectedVehicles >= 2) {
+            congestionLevel = 'MEDIO'; congestionText = 'Medio';
+        } else {
+            congestionLevel = 'BAJO'; congestionText = 'Bajo';
+        }
+
+        // Condición de vía
+        let roadCondition = '✅ Normal';
+        if (tags.some(t => ['wet', 'rain', 'mojado', 'lluvia', 'puddle'].includes(t.name?.toLowerCase()))) roadCondition = '🌧️ Mojada';
+        if (tags.some(t => ['construction', 'obra', 'work'].includes(t.name?.toLowerCase()))) roadCondition = '🚧 En obra';
+        if (tags.some(t => ['night', 'dark', 'noche', 'oscuro'].includes(t.name?.toLowerCase()))) roadCondition = '🌙 Nocturna';
+
+        // Render
+        document.getElementById('vision-caption-text').textContent = '📝 ' + caption;
+        document.getElementById('v-vehicles').textContent = detectedVehicles || '—';
+        document.getElementById('v-congestion-val').textContent = congestionText;
+        document.getElementById('v-conditions').textContent = roadCondition;
+        document.getElementById('v-incidents').textContent = detectedIncidents.length > 0 ? detectedIncidents.length : '✅ 0';
+
+        const badge = document.getElementById('congestion-badge');
+        badge.textContent = 'Congestión: ' + congestionText;
+        badge.className = 'congestion-badge ' + congestionLevel;
+
+        // Incidentes
+        if (detectedIncidents.length > 0) {
+            document.getElementById('vision-incidents-box').style.display = 'block';
+            document.getElementById('vision-incidents-list').innerHTML = detectedIncidents
+                .map(t => `<div style="font-size:12px; color:#ff9a9a; padding:4px 0;">⚠️ ${t.name} (${Math.round(t.confidence * 100)}% confianza)</div>`)
+                .join('');
+        } else {
+            document.getElementById('vision-incidents-box').style.display = 'none';
+        }
+
+        // Tags
+        const tagsList = document.getElementById('vision-tags-list');
+        tagsList.innerHTML = tags.slice(0, 20).map(t => {
+            const isVehicle = vehicleTags.some(v => t.name?.toLowerCase().includes(v));
+            const isIncident = incidentTags.some(i => t.name?.toLowerCase().includes(i));
+            const isRoad = roadTags.some(r => t.name?.toLowerCase().includes(r));
+            const cls = isIncident ? 'incident' : isVehicle ? 'vehicle' : isRoad ? 'road' : '';
+            return `<span class="vision-tag ${cls}">${t.name} <span style="opacity:0.5">${Math.round(t.confidence * 100)}%</span></span>`;
+        }).join('');
+
+        document.getElementById('vision-results').style.display = 'block';
+    }
 </script>
 </body>
 </html>
