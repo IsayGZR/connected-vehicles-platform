@@ -179,7 +179,7 @@
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <h1>🚗 Connected Vehicles</h1>
+        <h1>Connected Vehicles</h1>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
             <p>Platform — CDMX</p>
             <div class="live-indicator"><div class="live-dot"></div> LIVE</div>
@@ -193,7 +193,7 @@
     </div>
     <div style="padding: 0 15px;">
         <button class="vision-btn" onclick="openVisionModal()">
-            📹 Traffic Vision — Análisis CV
+            Traffic Vision
         </button>
     </div>
     <div class="section-title">Vehículos en tiempo real</div>
@@ -240,7 +240,7 @@
                     <button onclick="clearVision()" style="background:none; border:1px solid #1e2d45; color:#5a7a9a; font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer;">✕ Limpiar</button>
                 </div>
             </div>
-            <button class="vision-analyze-btn" id="analyze-btn" onclick="analyzeImage()">🔍 ANALIZAR CON AZURE AI VISION</button>
+            <button class="vision-analyze-btn" id="analyze-btn" onclick="analyzeImage()">ANALIZAR CON AZURE AI VISION</button>
             <div class="vision-loader" id="vision-loader">
                 <div class="vision-spinner"></div>
                 Analizando imagen con Azure AI Vision...
@@ -292,7 +292,7 @@
         </div>
     </div>
     <div class="detail-section">
-        <h3>🔮 Predicción de incidente</h3>
+        <h3> Predicción de incidente</h3>
         <div class="prediction-bar">
             <div class="bar-label">
                 <span>Probabilidad de incidente</span>
@@ -309,7 +309,7 @@
         <div class="alerts-tags" id="d-alerts"></div>
     </div>
     <div class="detail-section">
-        <h3>🤖 Diagnóstico ML</h3>
+        <h3>Diagnóstico con Machine Learning</h3>
 
         <!-- Mantenimiento Predictivo -->
         <div style="margin-bottom:14px;">
@@ -337,17 +337,17 @@
 
         <!-- Predicción Falla Motor -->
         <div>
-            <div style="font-size:11px; color:#ffc800; margin-bottom:4px;">🌡️ Predicción falla de motor</div>
+            <div style="font-size:11px; color:#ffc800; margin-bottom:4px;">Predicción falla de motor</div>
             <div id="d-engine-km" style="font-size:24px; font-weight:700; color:#ffc800;">--- km</div>
             <div style="font-size:10px; color:#5a7a9a; margin-top:2px;">Regresión Lineal • km estimados antes de sobrecalentamiento</div>
         </div>
     </div>
     <div class="detail-section">
-        <h3>📊 Información del viaje</h3>
+        <h3>Información del viaje</h3>
         <div id="d-info-rows"></div>
     </div>
     <div class="detail-section">
-        <h3>📈 Velocidad (últimas lecturas)</h3>
+        <h3>Velocidad (últimas lecturas)</h3>
         <canvas id="speedChart" height="120"></canvas>
     </div>
 </div>
@@ -859,7 +859,7 @@
         if (tags.some(t => ['night', 'dark', 'noche', 'oscuro'].includes(t.name?.toLowerCase()))) roadCondition = '🌙 Nocturna';
 
         // Render
-        document.getElementById('vision-caption-text').textContent = '📝 ' + caption;
+        document.getElementById('vision-caption-text').textContent = caption;
         document.getElementById('v-vehicles').textContent = detectedVehicles || '—';
         document.getElementById('v-congestion-val').textContent = congestionText;
         document.getElementById('v-conditions').textContent = roadCondition;
